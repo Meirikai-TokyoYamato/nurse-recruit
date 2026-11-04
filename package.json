@@ -1,0 +1,21 @@
+{
+  "name": "nurse-1st-year-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "ids": "node scripts/ids.mjs",
+    "photos": "node scripts/photos.mjs",
+    "predev": "node scripts/photos.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/photos.mjs",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.3.8"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}

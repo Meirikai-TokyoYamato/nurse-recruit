@@ -1,0 +1,53 @@
+---
+// 1年生の写真。表示する場所ごとに比率を決め、object-fit: cover で切り抜く。
+// 切り抜きの中心は nurses.json の focus（未指定は 50% 35%）。
+// 変換済みの写真がまだなければ、仮のグレー画像を出す。
+//
+// 例）<Photo nurse={n} kind="main" ratio="3/4" alt="…" />
+//     PC だけ別の写真・比率にする：<Photo nurse={n} kind="main" ratio="3/4" pcKind="wide" pcRatio="3/2" … />
+import { photoSource, type Nurse, type PhotoKind } from '../lib/nurses';
+
+type Ratio = '3/4' | '3/2' | 'auto'; // auto＝切り抜かず元の比率のまま
+interface Props {
+  nurse: Nurse;
+  kind: PhotoKind;
+  ratio: Ratio;
+  /** PC（768px 以上）で使う写真の種類と比率 */
+  pcKind?: PhotoKind;
+  pcRatio?: Ratio;
+  alt: string;
+  /** 表示幅の目安（srcset でどちらの大きさを読むかをブラウザが決める） */
+  sizes?: string;
+  class?: string;
+  eager?: boolean;
+}
+const { nurse, kind, ratio, pcKind, pcRatio, alt, sizes = '100vw', class: cls, eager = false } = Astro.props;
+
+const sp = photoSource(nurse, kind);
+const pc = pcKind ? photoSource(nurse, pcKind) : null;
+// どちらかしかない場合は、ある方を両方で使う
+const base = sp ?? pc;
+const pcUse = pc ?? sp;
+
+const vars = [
+  `--ratio:${ratio}`,
+  pcRatio && `--ratio-pc:${pcRatio}`,
+  base && `--pos:${base.position}`,
+  pcKind && pcUse && `--pos-pc:${pcUse.position}`,
+].filter(Boolean).join(';');
+const loading = eager ? 'eager' : 'lazy';
+---
+{!base ? (
+  <div class:list={['photo', 'photo--ph', cls]} style={vars} role="img" aria-label={alt}>
+    <span aria-hidden="true">写真</span>
+  </div>
+) : pcKind && pcUse && pcUse.src !== base.src ? (
+  <picture>
+    <source media="(min-width: 768px)" srcset={pcUse.srcset} sizes={sizes} />
+    <img class:list={['photo', cls]} style={vars} src={base.src} srcset={base.srcset} sizes={sizes}
+         alt={alt} loading={loading} decoding="async" />
+  </picture>
+) : (
+  <img class:list={['photo', cls]} style={vars} src={base.src} srcset={base.srcset} sizes={sizes}
+       alt={alt} loading={loading} decoding="async" />
+)}

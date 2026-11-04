@@ -1,0 +1,133 @@
+---
+// ④ 写真のみの人（拡大表示）
+// 「#k-3e」のような URL で直接開ける。Esc・背景クリック・閉じるボタンで閉じる。
+import Photo from './Photo.astro';
+import BoardZoom from './BoardZoom.astro';
+import ExtLink from './ExtLink.astro';
+import site from '../data/site.json';
+import { photoOnly, sameDeptInterview, detailUrl, photoAlt, photoSource } from '../lib/nurses';
+const total = photoOnly.length;
+---
+{total > 0 && (
+  <dialog class="pm" data-photo-modal aria-label="1年生の紹介">
+    <div class="pm__inner">
+      {photoOnly.map((n, i) => {
+        const prev = photoOnly[(i - 1 + total) % total];
+        const next = photoOnly[(i + 1) % total];
+        const rel = sameDeptInterview(n);
+        // board.jpg がある人だけ、人物写真の横（スマホでは下）にボードを並べる
+        const hasBoard = !!photoSource(n, 'board');
+        return (
+          <article class="pm__panel" data-slug={n.slug} hidden>
+            <div class="pm__top">
+              <span class="caption">{i + 1} / {total}</span>
+              <form method="dialog"><button class="pm__close" type="submit">× 閉じる</button></form>
+            </div>
+            <div class:list={['pm__body', !hasBoard && 'pm__body--solo']}>
+              <div class="pm__media">
+                <Photo nurse={n} kind="main" ratio="3/4" alt={photoAlt(n)} class="pm__photo"
+                       sizes={hasBoard ? '(min-width: 768px) 360px, 100vw' : '(min-width: 768px) 560px, 100vw'} />
+                {hasBoard && (
+                  <BoardZoom nurse={n} sizes="(min-width: 768px) 520px, 100vw" />
+                )}
+              </div>
+              <div class="pm__info">
+                <h2 class="pm__dept">{n.department}</h2>
+                <p class="pm__name">{n.displayName} ・ {n.joined}入職</p>
+                {rel && (
+                  <a class="more" href={detailUrl(rel)}>{n.department}のインタビューを読む（{rel.displayName}）→</a>
+                )}
+                <ExtLink class="btn" href={site.links.events}>見学・インターンシップ</ExtLink>
+                {total > 1 && (
+                  <div class="pm__pager">
+                    <a class="more" href={`#${prev.slug}`}>← 前の人</a>
+                    <a class="more" href={`#${next.slug}`}>次の人 →</a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </dialog>
+)}
+
+<style>
+  .pm {
+    width: calc(100% - 24px); max-width: 960px; max-height: calc(100dvh - 24px);
+    padding: 0; border: 0; border-radius: var(--radius-md);
+    background: var(--color-bg); color: var(--color-text); box-shadow: var(--shadow-lg);
+  }
+  .pm::backdrop { background: rgb(32 30 29 / 0.6); }
+  .pm__inner { padding: var(--space-2) var(--space-3) var(--space-4); }
+  .pm__panel[hidden] { display: none; }
+  .pm__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
+  .pm__close {
+    min-height: 44px; min-width: 44px; padding: 0 8px;
+    background: none; border: 0; cursor: pointer;
+    font-family: var(--font-sans); font-size: 14px; color: var(--color-text);
+  }
+  .pm__close:hover { color: var(--color-accent-text); }
+  .pm__body { display: flex; flex-direction: column; gap: var(--space-4); }
+  /* スマホ：人物写真とボードを縦に並べて幅いっぱい。ボードは切らず全体を見せる（比率 auto） */
+  .pm__media { display: flex; flex-direction: column; gap: var(--space-3); }
+  /* ボードがない人：人物写真だけ。3:4 を保ったまま画面に収まるよう、高さではなく幅を制限する */
+  .pm__body--solo .pm__media :global(.pm__photo) { max-width: calc(60dvh * 3 / 4); margin-inline: auto; }
+  .pm__info { display: flex; flex-direction: column; gap: var(--space-2); }
+  .pm__dept { font-size: 22px; }
+  .pm__name { font-family: var(--font-sans); font-size: 14px; color: var(--color-neutral-700); }
+  .pm__info :global(.btn) { margin-top: var(--space-2); }
+  .pm__pager { display: flex; justify-content: space-between; margin-top: var(--space-2); }
+
+  @media (min-width: 768px) {
+    .pm__inner { padding: var(--space-3) var(--space-5) var(--space-5); }
+    /* PC：人物写真とボードを横に並べ、その下に紹介文 */
+    .pm__media { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--space-4); align-items: start; }
+    .pm__info :global(.btn) { align-self: flex-start; }
+    /* ボードがない人：これまでどおり 人物写真｜紹介文 */
+    .pm__body--solo { display: grid; grid-template-columns: 3fr 2fr; gap: var(--space-5); }
+    .pm__body--solo .pm__media { display: block; }
+    .pm__body--solo .pm__media :global(.pm__photo) { max-width: calc((100dvh - 140px) * 3 / 4); margin-inline: 0 auto; }
+    .pm__body--solo .pm__info { justify-content: flex-end; }
+  }
+</style>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-photo-modal]');
+  if (dlg) {
+    const panels = [...dlg.querySelectorAll<HTMLElement>('[data-slug]')];
+    const slugs = panels.map((p) => p.dataset.slug!);
+    let lastFocus: HTMLElement | null = null;
+    const currentSlug = () => decodeURIComponent(location.hash.slice(1));
+
+    const show = (slug: string) => {
+      panels.forEach((p) => (p.hidden = p.dataset.slug !== slug));
+      if (!dlg.open) {
+        lastFocus = document.activeElement as HTMLElement | null;
+        dlg.showModal();
+      }
+      dlg.querySelector<HTMLElement>(`[data-slug="${slug}"] .pm__close`)?.focus();
+    };
+    const sync = () => {
+      const s = currentSlug();
+      if (slugs.includes(s)) show(s);
+      else if (dlg.open) dlg.close();
+    };
+
+    window.addEventListener('hashchange', sync);
+    sync();
+
+    // 背景（ダイアログの外側）クリックで閉じる
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+    // 閉じたら URL の #… を消して、開く前の場所にフォーカスを戻す
+    dlg.addEventListener('close', () => {
+      if (slugs.includes(currentSlug())) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      lastFocus?.focus();
+    });
+  }
+</script>

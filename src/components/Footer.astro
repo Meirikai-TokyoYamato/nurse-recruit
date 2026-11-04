@@ -1,0 +1,45 @@
+---
+import site from '../data/site.json';
+import ExtLink from './ExtLink.astro';
+import Logo from './Logo.astro';
+
+const links = [
+  { label: '募集要項', href: site.links.requirements },
+  { label: '見学・インターンシップ', href: site.links.events },
+  { label: '採用試験', href: site.links.exam },
+  { label: 'Instagram', href: site.links.instagram },
+];
+---
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <p class="footer__name"><Logo /><span class="footer__division">{site.division}</span></p>
+      <p class="caption">{site.address}</p>
+      <p class="caption">TEL <a href={`tel:${site.tel.replace(/[^0-9]/g, '')}`}>{site.tel}</a></p>
+    </div>
+    <nav class="footer__nav" aria-label="採用情報">
+      <ul>
+        {links.map((l) => <li><ExtLink class="more" href={l.href}>{l.label}</ExtLink></li>)}
+      </ul>
+      <div class="footer__sites">
+        <ExtLink class="more" href={site.links.nurseSite}>{site.division}サイトへ →</ExtLink>
+        <ExtLink class="more" href={site.links.hospitalSite}>病院公式サイトへ →</ExtLink>
+      </div>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .footer { margin-top: 80px; padding-block: var(--space-6); background: var(--color-neutral-200); }
+  .footer__inner { display: flex; flex-direction: column; gap: var(--space-4); }
+  .footer__name { --logo-h: 32px; display: flex; align-items: center; gap: 10px; margin-bottom: var(--space-2); }
+  .footer__division { font-family: var(--font-sans); font-size: 13px; color: var(--color-neutral-700); }
+  .footer .caption a { color: inherit; }
+  .footer__nav { display: flex; flex-direction: column; gap: var(--space-1); }
+  .footer__nav ul { display: flex; flex-wrap: wrap; column-gap: var(--space-4); }
+  .footer__sites { display: flex; flex-wrap: wrap; column-gap: var(--space-4); }
+  @media (min-width: 768px) {
+    .footer__inner { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+    .footer__nav { align-items: flex-end; }
+  }
+</style>

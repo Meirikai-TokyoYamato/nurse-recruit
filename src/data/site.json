@@ -1,0 +1,61 @@
+{
+  "hospitalName": "明理会東京大和病院",
+  "division": "看護部",
+  "siteName": "明理会東京大和病院 看護部｜1年生紹介",
+  "logo": {
+    "src": "images/logo.png",
+    "alt": "明理会東京大和病院"
+  },
+  "address": "〒173-0001 東京都板橋区本町36-3",
+  "tel": "03-5943-2431",
+  "links": {
+    "_memo": "外部リンクの行き先。ここを書き換えるとサイト全体のリンクが変わる（新しいタブで開く）",
+    "nurseSite": "https://nurse.tokyoyamato-hp.com/",
+    "requirements": "https://nurse.tokyoyamato-hp.com/recruit/guide/",
+    "events": "https://nurse.tokyoyamato-hp.com/recruit/events.html",
+    "exam": "https://nurse.tokyoyamato-hp.com/recruit/shiken.html",
+    "education": "https://nurse.tokyoyamato-hp.com/onboarding/",
+    "hospitalSite": "https://www.ims.gr.jp/yamato/",
+    "instagram": "https://www.instagram.com/yamato_kangobu_recruit/"
+  },
+  "labels": {
+    "_memo": "英字の小見出し",
+    "hero": "MEIRIKAI TOKYO YAMATO HOSPITAL ／ NURSING",
+    "peers": "NEW NURSES 2026",
+    "interview": "INTERVIEW",
+    "header": "NEW NURSES 2026"
+  },
+  "description": "2026年4月に入職した新人看護師を紹介します。見学・インターンシップの情報もこちらから。",
+  "noindex": false,
+  "recruit": {
+    "_memo": "トップの募集要項セクション。年度が変わったらここを書き換える",
+    "target": "2027年4月入職・新卒看護師",
+    "items": [
+      {
+        "label": "初任給",
+        "value": "大学卒 227,000円〜／専門卒 224,500円〜"
+      },
+      {
+        "label": "年間休日",
+        "value": "118日（月9〜10日程度）"
+      },
+      {
+        "label": "夜勤手当",
+        "value": "14,000円／回"
+      },
+      {
+        "label": "職員寮",
+        "value": "ワンルーム寮完備（月45,000円・病院から徒歩15分程度）"
+      },
+      {
+        "label": "教育",
+        "value": "新卒教育システム・プリセプターシップ"
+      }
+    ],
+    "note": "※配属先手当・夜勤手当は初任給に含まれません。詳しくは募集要項をご確認ください。",
+    "detailUrl": "https://nurse.tokyoyamato-hp.com/recruit/guide/ns-new.html"
+  },
+  "education": {
+    "lead": "1年目は、先輩が1人ずつつくプリセプター制度と、月1回の集合研修で少しずつできることを増やしていきます。"
+  }
+}

@@ -1,0 +1,125 @@
+---
+import site from '../data/site.json';
+import ExtLink from './ExtLink.astro';
+import Logo from './Logo.astro';
+import { withBase } from '../lib/nurses';
+
+const nav = [
+  { label: '1年生', href: withBase('nurses/') },
+  { label: '募集要項', href: site.links.requirements },
+  { label: '採用試験', href: site.links.exam },
+];
+---
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a class="header__brand" href={withBase('')}>
+      <Logo />
+      <span class="header__rule" aria-hidden="true"></span>
+      <span class="header__title">
+        <span class="header__division">{site.division}</span>
+        <span class="header__en" lang="en">{site.labels.header}</span>
+      </span>
+    </a>
+
+    <nav class="header__nav" aria-label="メインメニュー">
+      <ul>
+        {nav.map((n) => <li><ExtLink href={n.href}>{n.label}</ExtLink></li>)}
+      </ul>
+      <ExtLink class="btn" href={site.links.events}>見学・インターンシップ</ExtLink>
+    </nav>
+
+    <details class="header__menu">
+      <summary aria-label="メニューを開く">メニュー</summary>
+      <div class="header__drawer">
+        <ul>
+          <li><a href={withBase('')}>トップ</a></li>
+          {nav.map((n) => <li><ExtLink href={n.href}>{n.label}</ExtLink></li>)}
+          <li><ExtLink href={site.links.events}>見学・インターンシップ</ExtLink></li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</header>
+<div class="header-spacer" aria-hidden="true"></div>
+
+<style>
+  /* ===== スマホ・タブレット（1023px まで） ===== */
+  .header {
+    --header-h: 60px;
+    --logo-h: 24px; /* ロゴは横長（約7:1）なので、スマホでも「メニュー」が収まる高さにする */
+    position: relative; z-index: 30;
+    background: var(--color-bg);
+  }
+  .header__inner { display: flex; align-items: center; justify-content: space-between; height: var(--header-h); gap: var(--space-4); }
+  .header__brand { display: flex; align-items: center; color: var(--color-text); text-decoration: none; min-width: 0; }
+  .header__rule { flex: none; width: 1px; height: 24px; margin-inline: 12px; background: var(--color-divider); transition: height 0.2s ease; }
+  .header__title { display: flex; flex-direction: column; line-height: 1.2; }
+  .header__division { font-size: 15px; font-weight: 600; color: var(--color-text); white-space: nowrap; }
+  .header__en { display: none; }
+
+  .header__nav { display: none; }
+  .header__menu summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center;
+    min-height: 44px; padding: 0 4px; font-family: var(--font-sans); font-size: 14px;
+  }
+  .header__menu summary::-webkit-details-marker { display: none; }
+  .header__menu[open] summary { color: var(--color-accent-text); }
+  .header__drawer {
+    position: absolute; left: 0; right: 0; top: 100%;
+    background: var(--color-bg); box-shadow: var(--shadow-md);
+    padding: var(--space-2) var(--gutter) var(--space-4);
+  }
+  .header__drawer :global(a) {
+    display: flex; align-items: center; min-height: 48px;
+    color: var(--color-text); text-decoration: none; font-size: 16px;
+  }
+  .header-spacer { display: none; }
+
+  @media (min-width: 768px) {
+    .header { --logo-h: 28px; }
+    .header__menu { display: none; }
+    .header__nav { display: flex; align-items: center; gap: var(--space-5); }
+    .header__nav ul { display: flex; gap: var(--space-4); }
+    .header__nav ul :global(a) {
+      display: inline-flex; align-items: center; min-height: 44px;
+      color: var(--color-text); text-decoration: none; font-family: var(--font-sans); font-size: 15px; white-space: nowrap;
+    }
+    .header__nav :global(.btn) { white-space: nowrap; }
+    .header__nav ul :global(a:hover) { color: var(--color-accent-text); }
+  }
+
+  /* ===== PC（1024px 以上）：上部に固定し、スクロールで縮める ===== */
+  @media (min-width: 1024px) {
+    .header {
+      --header-h: 88px;
+      --logo-h: 52px;
+      position: fixed; top: 0; left: 0; right: 0;
+      transition: box-shadow 0.2s ease;
+    }
+    .header__inner { padding-inline: 40px; transition: height 0.2s ease; }
+    .header__rule { height: 32px; margin-inline: 24px; }
+    .header__division { font-size: 20px; }
+    .header__en {
+      display: block; margin-top: 2px;
+      font-family: var(--font-sans); font-size: 11px; line-height: 1.4; font-weight: 400;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent-text);
+    }
+    /* 固定したヘッダーの分だけ本文を下げる（高さは縮める前の 88px のまま。縮めても本文は動かない） */
+    .header-spacer { display: block; height: 88px; }
+
+    .header.is-scrolled { --header-h: 64px; --logo-h: 40px; box-shadow: var(--shadow-sm); }
+  }
+  @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+    .header, .header__inner { transition: none; }
+  }
+</style>
+
+<script>
+  // 80px 以上スクロールしたらヘッダーを縮める（PC のみ見た目が変わる）
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  if (header) {
+    const update = () => header.classList.toggle('is-scrolled', window.scrollY >= 80);
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+</script>

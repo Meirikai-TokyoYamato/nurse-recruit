@@ -1,0 +1,44 @@
+---
+// ボードの拡大表示。[data-board-zoom] のボタンを押すと開く。Esc・画像や背景のクリック・閉じるボタンで閉じる。
+---
+<dialog class="bl" data-board-lightbox aria-label="ボードの拡大表示">
+  <form method="dialog"><button class="bl__close" type="submit">× 閉じる</button></form>
+  <img class="bl__img" alt="" />
+</dialog>
+
+<style>
+  .bl {
+    width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; padding: var(--space-2);
+    border: 0; background: rgb(32 30 29 / 0.92); color: #fff;
+  }
+  .bl[open] { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+  .bl::backdrop { background: rgb(32 30 29 / 0.6); }
+  .bl form { align-self: flex-end; }
+  .bl__close {
+    min-height: 44px; min-width: 44px; padding: 0 8px; background: none; border: 0; cursor: pointer;
+    font-family: var(--font-sans); font-size: 14px; color: #fff;
+  }
+  /* 切らずに全体を見せる */
+  .bl__img { flex: 1; min-height: 0; max-width: 100%; object-fit: contain; background: #fff; cursor: zoom-out; }
+</style>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-board-lightbox]');
+  if (dlg) {
+    const img = dlg.querySelector<HTMLImageElement>('.bl__img')!;
+    let lastFocus: HTMLElement | null = null;
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-board-zoom]');
+      if (!btn) return;
+      lastFocus = btn;
+      img.src = btn.dataset.src ?? '';
+      img.alt = btn.dataset.alt ?? '';
+      dlg.showModal();
+    });
+    // 画像・背景のクリックでも閉じる
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg || e.target === img) dlg.close();
+    });
+    dlg.addEventListener('close', () => lastFocus?.focus());
+  }
+</script>

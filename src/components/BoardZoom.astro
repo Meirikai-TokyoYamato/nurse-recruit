@@ -1,0 +1,23 @@
+---
+// ボード（board.jpg）を表示し、押すと全体を拡大表示する（拡大の本体は Base.astro の BoardLightbox）。
+// ボードは切り抜かず、元の比率のまま。
+import Photo from './Photo.astro';
+import { photoSource, type Nurse } from '../lib/nurses';
+
+interface Props { nurse: Nurse; sizes?: string; class?: string }
+const { nurse, sizes = '100vw', class: cls } = Astro.props;
+const src = photoSource(nurse, 'board');
+const alt = nurse.boardAlt || `${nurse.displayName}のボード`;
+---
+{src && (
+  <button type="button" class:list={['bz', cls]} data-board-zoom data-src={src.src} data-alt={alt}>
+    <Photo nurse={nurse} kind="board" ratio="auto" alt={alt} sizes={sizes} />
+    <span class="bz__hint caption">クリック（タップ）で拡大</span>
+  </button>
+)}
+
+<style>
+  .bz { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: zoom-in; font: inherit; }
+  .bz__hint { display: block; margin-top: var(--space-1); }
+  .bz:hover .bz__hint { color: var(--color-accent-text); }
+</style>

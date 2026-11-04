@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# 元の写真（EXIF付き）は GitHub に上げない。変換後の public/images/ だけを上げる
+photos/

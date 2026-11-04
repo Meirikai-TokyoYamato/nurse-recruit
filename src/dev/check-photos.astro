@@ -1,0 +1,151 @@
+---
+// 写真の切り抜き確認ページ（npm run dev のときだけ /_check/photos/ で開ける。公開用には含まれない）
+// 全員の写真を、表示する場所ごとの比率で並べる。切り抜きの中心は nurses.json の focus で調整する。
+import '../styles/global.css';
+import fs from 'node:fs';
+import path from 'node:path';
+import Photo from '../components/Photo.astro';
+import { nurses, photoSource, DEFAULT_FOCUS, type Nurse, type PhotoKind } from '../lib/nurses';
+
+const kinds: PhotoKind[] = ['main', 'wide', 'work', 'team'];
+
+// photos/<slug>/ にある元の写真
+const originalOf = (n: Nurse, k: PhotoKind) => {
+  const dir = path.join(process.cwd(), 'photos', n.slug);
+  if (!fs.existsSync(dir)) return null;
+  return fs.readdirSync(dir).find((f) => f.toLowerCase().startsWith(`${k}.`)) ?? null;
+};
+const status = (n: Nurse, k: PhotoKind) => {
+  const src = photoSource(n, k);
+  const converted = src?.kind === k;
+  const original = originalOf(n, k);
+  if (converted) return { ok: true, text: `変換済み${original ? '' : '（元の写真なし）'}` };
+  if (original) return { ok: false, text: '元の写真あり・未変換（npm run photos）' };
+  if (k === 'wide' && src) return { ok: true, text: 'なし → main で代用' };
+  return { ok: false, text: 'なし' };
+};
+const needed = (n: Nurse, k: PhotoKind) => k === 'main' || n.hasInterview;
+const focusOf = (n: Nurse, k: PhotoKind) => n.focus?.[k] ?? `${DEFAULT_FOCUS}（未指定）`;
+const pos = (v: string) => v.split(/\s+/).map((s) => s.trim());
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>写真の切り抜き確認（確認用）</title>
+  </head>
+  <body>
+    <main class="check">
+      <h1 class="page-title">写真の切り抜き確認</h1>
+      <p class="caption lead">
+        確認用ページです（npm run dev のときだけ表示され、公開サイトには含まれません）。<br />
+        元の写真は <code>photos/&lt;slug&gt;/main.jpg</code> などに置き、<code>npm run photos</code> で変換します。
+        切り抜きの中心は <code>src/data/nurses.json</code> の <code>"focus"</code>（例 <code>"main": "50% 30%"</code>。左右％ 上下％）で調整します。
+        保存するとこのページに反映されます。
+      </p>
+
+      {nurses.map((n) => {
+        const wide = photoSource(n, 'wide');
+        return (
+          <section class="person">
+            <h2 class="section-title">{n.department} ・ {n.displayName} <span class="caption">（{n.slug}{n.hasInterview ? '・インタビューあり' : '・写真のみ'}）</span></h2>
+
+            <table class="files caption">
+              <thead><tr><th>写真</th><th>状態</th><th>切り抜きの中心（focus）</th></tr></thead>
+              <tbody>
+                {kinds.filter((k) => needed(n, k)).map((k) => {
+                  const s = status(n, k);
+                  return (
+                    <tr>
+                      <td>{k}.jpg</td>
+                      <td class:list={[s.ok ? 'ok' : 'ng']}>{s.text}</td>
+                      <td>{focusOf(n, k)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div class="rows">
+              <div class="row">
+                <h3 class="kicker">縦 3:4（main）</h3>
+                <div class="items">
+                  <figure style="width:110px"><Photo nurse={n} kind="main" ratio="3/4" alt="" sizes="110px" /><figcaption class="caption">同期一覧（PC）</figcaption></figure>
+                  <figure style="width:170px"><Photo nurse={n} kind="main" ratio="3/4" alt="" sizes="170px" /><figcaption class="caption">写真のみの人の欄</figcaption></figure>
+                  <figure style="width:260px"><Photo nurse={n} kind="main" ratio="3/4" alt="" sizes="260px" /><figcaption class="caption">拡大表示</figcaption></figure>
+                  {n.featured && (
+                    <figure style="width:260px"><Photo nurse={n} kind="main" ratio="3/4" alt="" sizes="260px" /><figcaption class="caption">スマホの最初の1人の欄</figcaption></figure>
+                  )}
+                </div>
+              </div>
+
+              {n.hasInterview && (
+                <div class="row">
+                  <h3 class="kicker">横 3:2（{wide?.kind === 'main' ? 'wide がないので main で代用' : 'wide'}）</h3>
+                  <div class="items">
+                    <figure style="width:300px"><Photo nurse={n} kind="wide" ratio="3/2" alt="" sizes="300px" /><figcaption class="caption">一覧のインタビューの段</figcaption></figure>
+                    <figure style="width:400px"><Photo nurse={n} kind="wide" ratio="3/2" alt="" sizes="400px" /><figcaption class="caption">詳細ページの一番上{n.featured ? '／PCの最初の1人の欄' : ''}</figcaption></figure>
+                  </div>
+                </div>
+              )}
+
+              {n.hasInterview && (
+                <div class="row">
+                  <h3 class="kicker">横 3:2（本文写真）</h3>
+                  <div class="items">
+                    <figure style="width:300px"><Photo nurse={n} kind="work" ratio="3/2" alt="" sizes="300px" /><figcaption class="caption">work（04 のあと）</figcaption></figure>
+                    <figure style="width:300px"><Photo nurse={n} kind="team" ratio="3/2" alt="" sizes="300px" /><figcaption class="caption">team（06 のあと）</figcaption></figure>
+                  </div>
+                </div>
+              )}
+
+              <div class="row">
+                <h3 class="kicker">元の写真の全体（＋が切り抜きの中心）</h3>
+                <div class="items">
+                  {kinds.filter((k) => needed(n, k)).map((k) => {
+                    const s = photoSource(n, k);
+                    if (!s || s.kind !== k) return null;
+                    const [x, y] = pos(s.position);
+                    return (
+                      <figure class="whole">
+                        <span class="whole__box">
+                          <img src={s.src} alt="" />
+                          <span class="whole__mark" style={`left:${x};top:${y}`} aria-hidden="true">＋</span>
+                        </span>
+                        <figcaption class="caption">{k}（{s.position}）</figcaption>
+                      </figure>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
+    </main>
+  </body>
+</html>
+
+<style>
+  .check { max-width: 1200px; margin: 0 auto; padding: 24px 16px 80px; }
+  .lead { margin: 8px 0 32px; max-width: 60em; }
+  code { font-size: 0.95em; background: var(--color-neutral-200); padding: 0 4px; }
+  .person { padding: 28px 0; border-top: 1px solid var(--color-divider); }
+  .person h2 { margin-bottom: 12px; }
+  .files { border-collapse: collapse; margin-bottom: 16px; }
+  .files th, .files td { text-align: left; padding: 3px 16px 3px 0; }
+  .files .ok { color: #1d7a3a; }
+  .files .ng { color: #b3261e; }
+  .rows { display: flex; flex-direction: column; gap: 18px; }
+  .items { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 6px; }
+  figure { margin: 0; }
+  figcaption { margin-top: 4px; }
+  .whole__box { position: relative; display: inline-block; }
+  .whole__box img { display: block; height: 200px; width: auto; max-width: none; }
+  .whole__mark {
+    position: absolute; transform: translate(-50%, -50%);
+    color: #fff; font: 700 22px/1 sans-serif; text-shadow: 0 0 3px #000, 0 0 6px #000;
+  }
+</style>

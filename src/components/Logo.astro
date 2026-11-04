@@ -1,0 +1,28 @@
+---
+// 病院ロゴ。public/images/logo.png がまだなければ病院名を文字で出す。
+// 高さは使う側で CSS 変数 --logo-h を指定する（幅は自動。縦横比・色はそのまま）。
+import site from '../data/site.json';
+import { photoExists, withBase } from '../lib/nurses';
+
+interface Props { class?: string }
+const { class: cls } = Astro.props;
+const exists = photoExists(site.logo.src);
+---
+{exists ? (
+  <img class:list={['logo', cls]} src={withBase(site.logo.src)} alt={site.logo.alt} />
+) : (
+  <span class:list={['logo', 'logo--text', cls]}>{site.hospitalName}</span>
+)}
+
+<style>
+  .logo {
+    display: block; height: var(--logo-h, 32px); width: auto; max-width: none; flex: none;
+    transition: height 0.2s ease;
+  }
+  .logo--text {
+    display: flex; align-items: center;
+    font-weight: 600; font-size: calc(var(--logo-h, 32px) * 0.5); line-height: 1.2;
+    color: var(--color-text); white-space: nowrap;
+    transition: height 0.2s ease, font-size 0.2s ease;
+  }
+</style>

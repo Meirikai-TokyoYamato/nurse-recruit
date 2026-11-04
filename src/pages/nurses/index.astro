@@ -1,0 +1,92 @@
+---
+// ② 1年生一覧
+import Base from '../../layouts/Base.astro';
+import Photo from '../../components/Photo.astro';
+import PhotoModal from '../../components/PhotoModal.astro';
+import { nurses, interviewed, photoOnly, detailUrl, photoAlt, withBase } from '../../lib/nurses';
+import ExtLink from '../../components/ExtLink.astro';
+import site from '../../data/site.json';
+
+const joinedYear = nurses[0]?.joined.match(/\d{4}/)?.[0] ?? '';
+const title = `${joinedYear}年入職の1年生`;
+---
+<Base title={title} description={`${title}${nurses.length}人を紹介します。`}>
+  <div class="container">
+    <nav class="crumb caption" aria-label="パンくず">
+      <a href={withBase('')}>← トップ</a>
+    </nav>
+    <h1 class="page-title">{title} <span class="count">{nurses.length}人</span></h1>
+  </div>
+
+  {interviewed.length > 0 && (
+    <section class="section container" aria-labelledby="iv-title">
+      <div class="section__head">
+        <h2 id="iv-title" class="section-title">インタビュー</h2>
+      </div>
+      <ul class="iv-list">
+        {interviewed.map((n) => (
+          <li>
+            <a class="iv" href={detailUrl(n)}>
+              <Photo nurse={n} kind="wide" ratio="3/2" alt={photoAlt(n)} sizes="(min-width: 768px) 50vw, 100vw" />
+              <p class="caption">{n.department} ・ {n.displayName}</p>
+              <p class="quote iv__quote">「{n.headline}」</p>
+              <span class="iv__more">インタビューを読む →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {photoOnly.length > 0 && (
+    <section class="section container" aria-labelledby="peers-title">
+      <div class="section__head">
+        <h2 id="peers-title" class="section-title">同期のみんな</h2>
+      </div>
+      <ul class="peers">
+        {photoOnly.map((n) => (
+          <li>
+            <a class="peer" href={`#${n.slug}`}>
+              <Photo nurse={n} kind="main" ratio="3/4" alt={photoAlt(n)} sizes="(min-width: 768px) 20vw, 50vw" />
+              <span class="peer__dept">{n.department}</span>
+              <span class="caption">{n.displayName}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <div class="container cta">
+    <ExtLink class="btn" href={site.links.events}>見学・インターンシップ</ExtLink>
+  </div>
+
+  <PhotoModal />
+</Base>
+
+<style>
+  .crumb { padding-block: var(--space-2) var(--space-3); }
+  .crumb a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+  .count { font-size: 0.6em; font-weight: 400; color: var(--color-neutral-700); margin-left: 0.3em; }
+  .section:first-of-type { padding-top: var(--space-5); }
+
+  /* 上段：スマホ1列／PC2列 */
+  .iv-list { display: grid; gap: var(--space-5); }
+  @media (min-width: 768px) { .iv-list { grid-template-columns: repeat(2, 1fr); gap: var(--space-6) var(--space-5); } }
+  .iv { display: flex; flex-direction: column; gap: var(--space-1); color: var(--color-text); text-decoration: none; }
+  .iv :global(.photo) { margin-bottom: var(--space-1); }
+  .iv__quote { font-size: 18px; line-height: 1.6; }
+  @media (min-width: 768px) { .iv__quote { font-size: 20px; } }
+  .iv__more { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: var(--color-accent-text); min-height: 44px; display: flex; align-items: center; }
+  .iv:hover .iv__quote { text-decoration: underline; }
+
+  /* 下段：スマホ2列／PC5列 */
+  .peers { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4) var(--space-3); }
+  @media (min-width: 768px) { .peers { grid-template-columns: repeat(5, 1fr); gap: var(--space-5) var(--space-4); } }
+  .peer { display: flex; flex-direction: column; gap: 2px; color: var(--color-text); text-decoration: none; }
+  .peer :global(.photo) { margin-bottom: var(--space-1); }
+  .peer__dept { font-weight: 600; font-size: 15px; line-height: 1.5; }
+  .peer:hover .peer__dept { text-decoration: underline; }
+
+  .cta { padding-top: 64px; }
+</style>
