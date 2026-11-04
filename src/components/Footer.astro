@@ -33,7 +33,8 @@ const links = [
   .footer { margin-top: 80px; padding-block: var(--space-6); background: var(--color-neutral-200); }
   .footer__inner { display: flex; flex-direction: column; gap: var(--space-4); }
   .footer__name { --logo-h: 32px; display: flex; align-items: center; gap: 10px; margin-bottom: var(--space-2); }
-  .footer__division { font-family: var(--font-sans); font-size: 13px; color: var(--color-neutral-700); }
+  /* ロゴ（高さ32px）に合わせる。ヘッダーの「看護部」と同じ書体・太さ */
+  .footer__division { font-size: 18px; font-weight: 600; line-height: 1.2; color: var(--color-text); white-space: nowrap; }
   .footer .caption a { color: inherit; }
   .footer__nav { display: flex; flex-direction: column; gap: var(--space-1); }
   .footer__nav ul { display: flex; flex-wrap: wrap; column-gap: var(--space-4); }
